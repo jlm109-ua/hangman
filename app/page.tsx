@@ -3,9 +3,9 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Heart } from "lucide-react"
 import { generate } from 'random-words'
 import DraggableDictionary from '@/components/DraggableDictionary'
+import { HangmanSVG } from '@/components/HangmanSVG'
 
 interface DictionaryEntry {
   word: string;
@@ -17,31 +17,33 @@ interface DictionaryEntry {
   }[];
 }
 
+const fallbackWords = ['react', 'javascript', 'typescript', 'component', 'function', 'state', 'effect', 'props'];
+
 const Hangman = () => {
-  // State variables
   const [word, setWord] = useState('')
   const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set())
   const [wrongLetters, setWrongLetters] = useState<Set<string>>(new Set())
-  const [lives, setLives] = useState(5)
+  const [lives, setLives] = useState(6)
   const [inputLetter, setInputLetter] = useState('')
   const [gameOver, setGameOver] = useState(false)
   const [message, setMessage] = useState('')
-  const [animatingHeart, setAnimatingHeart] = useState(-1)
   const [dictionaryData, setDictionaryData] = useState<DictionaryEntry[] | null>(null)
   const [showDictionary, setShowDictionary] = useState(false)
 
-  // Function to get a random word
   const getRandomWord = useCallback(() => {
     try {
       const newWord = generate({ exactly: 1, minLength: 5 })[0]
-      return newWord.toLowerCase()
+      if (typeof newWord === 'string' && newWord.length >= 5) {
+        return newWord.toLowerCase()
+      } else {
+        throw new Error('Invalid word generated')
+      }
     } catch (error) {
       console.error('Error getting random word:', error)
-      return 'default' // default word in case of error
+      return fallbackWords[Math.floor(Math.random() * fallbackWords.length)]
     }
   }, [])
 
-  // Function to fetch dictionary data
   const fetchDictionaryData = useCallback(async (word: string) => {
     try {
       const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
@@ -54,27 +56,26 @@ const Hangman = () => {
     }
   }, [])
 
-  // Function to start or restart the game
   const startGame = useCallback(() => {
     const newWord = getRandomWord()
+    console.log('New word:', newWord) // For debugging
     setWord(newWord)
     setGuessedLetters(new Set())
     setWrongLetters(new Set())
-    setLives(5)
+    setLives(6)
     setGameOver(false)
     setMessage('')
-    // We don't reset the dictionary data or visibility here
+    setShowDictionary(false)
   }, [getRandomWord])
 
-  // Function to check the guessed letter
   const checkLetter = useCallback((letter: string) => {
     if (gameOver) return
     setInputLetter('')
+    if (guessedLetters.has(letter) || wrongLetters.has(letter)) return
     if (word.includes(letter)) {
       const newGuessedLetters = new Set(guessedLetters)
       newGuessedLetters.add(letter)
       setGuessedLetters(newGuessedLetters)
-      // Check if all letters have been guessed
       const allLettersGuessed = word.split('').every(l => newGuessedLetters.has(l))
       if (allLettersGuessed) {
         setGameOver(true)
@@ -87,8 +88,7 @@ const Hangman = () => {
       setWrongLetters(newWrongLetters)
       const newLives = lives - 1
       setLives(newLives)
-      setAnimatingHeart(newLives)
-      // Check if the player has lost
+      console.log(lives) // For debugging
       if (newLives === 0) {
         setGameOver(true)
         setMessage(`You lost! The word was: ${word}`)
@@ -97,7 +97,6 @@ const Hangman = () => {
     }
   }, [gameOver, guessedLetters, wrongLetters, word, lives, fetchDictionaryData])
 
-  // Start the game when the component mounts
   useEffect(() => {
     startGame()
   }, [startGame])
@@ -105,18 +104,8 @@ const Hangman = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-2xl flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold mb-8">h_ngman</h1>
-        {/* Hearts representing lives */}
-        <div className="flex mb-8">
-          {[...Array(5)].map((_, index) => (
-            <Heart
-              key={index}
-              className={`w-8 h-8 ${index < lives ? 'text-destructive' : 'text-muted'} ${animatingHeart === index ? 'animate-heartbeat' : ''}`}
-              fill={index < lives ? 'currentColor' : 'gray'}
-            />
-          ))}
-        </div>
-        {/* Word display */}
+        <HangmanSVG lives={lives} className="mb-8" />
+        <h1 className="text-4xl font-bold mb-8">h_ngm_n</h1>
         <div className="text-4xl mb-8">
           {word.split('').map((letter, index) => (
             <span key={index} className="mr-2">
@@ -124,7 +113,6 @@ const Hangman = () => {
             </span>
           ))}
         </div>
-        {/* Input form or game over message */}
         {!gameOver ? (
           <form onSubmit={(e) => {
             e.preventDefault()
@@ -145,7 +133,6 @@ const Hangman = () => {
             {message}
           </div>
         )}
-        {/* Guessed and wrong letters display */}
         <div className="flex gap-4 mb-4">
           <div>
             <h2 className="text-lg font-semibold mb-2">Correct</h2>
@@ -164,12 +151,10 @@ const Hangman = () => {
             </div>
           </div>
         </div>
-        {/* Start/Restart game button */}
         <Button onClick={startGame} className="mt-4">
           {gameOver ? 'Play again' : 'Restart game'}
         </Button>
       </div>
-      {/* Draggable Dictionary */}
       {showDictionary && dictionaryData && (
         <DraggableDictionary
           dictionaryData={dictionaryData}
