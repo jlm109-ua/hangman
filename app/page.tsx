@@ -4,9 +4,18 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Heart } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
 import { generate } from 'random-words'
 import DraggableDictionary from '@/components/DraggableDictionary'
+
+interface DictionaryEntry {
+  word: string;
+  meanings: {
+    partOfSpeech: string;
+    definitions: {
+      definition: string;
+    }[];
+  }[];
+}
 
 const Hangman = () => {
   // State variables
@@ -18,8 +27,7 @@ const Hangman = () => {
   const [gameOver, setGameOver] = useState(false)
   const [message, setMessage] = useState('')
   const [animatingHeart, setAnimatingHeart] = useState(-1)
-  const [dictionaryData, setDictionaryData] = useState<any>(null)
-  const { toast } = useToast()
+  const [dictionaryData, setDictionaryData] = useState<DictionaryEntry[] | null>(null)
   const [showDictionary, setShowDictionary] = useState(false)
 
   // Function to get a random word
@@ -37,7 +45,7 @@ const Hangman = () => {
   const fetchDictionaryData = useCallback(async (word: string) => {
     try {
       const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
-      const data = await response.json()
+      const data: DictionaryEntry[] = await response.json()
       setDictionaryData(data)
       setShowDictionary(true)
     } catch (error) {
@@ -62,19 +70,13 @@ const Hangman = () => {
   const checkLetter = useCallback((letter: string) => {
     if (gameOver) return
     setInputLetter('')
-    if (guessedLetters.has(letter) || wrongLetters.has(letter)) {
-      toast({
-        title: "Letter already used",
-        description: "You've already tried this letter.",
-      })
-      return
-    }
     if (word.includes(letter)) {
       const newGuessedLetters = new Set(guessedLetters)
       newGuessedLetters.add(letter)
       setGuessedLetters(newGuessedLetters)
       // Check if all letters have been guessed
-      if ([...word].every(l => newGuessedLetters.has(l))) {
+      const allLettersGuessed = word.split('').every(l => newGuessedLetters.has(l))
+      if (allLettersGuessed) {
         setGameOver(true)
         setMessage('You won!')
         fetchDictionaryData(word)
@@ -93,7 +95,7 @@ const Hangman = () => {
         fetchDictionaryData(word)
       }
     }
-  }, [gameOver, guessedLetters, wrongLetters, word, lives, toast, fetchDictionaryData])
+  }, [gameOver, guessedLetters, wrongLetters, word, lives, fetchDictionaryData])
 
   // Start the game when the component mounts
   useEffect(() => {
@@ -148,7 +150,7 @@ const Hangman = () => {
           <div>
             <h2 className="text-lg font-semibold mb-2">Correct</h2>
             <div className="flex flex-wrap gap-2">
-              {[...guessedLetters].map((letter) => (
+              {Array.from(guessedLetters).map((letter) => (
                 <span key={letter} className="px-2 py-1 bg-green-300 font-bold rounded">{letter}</span>
               ))}
             </div>
@@ -156,7 +158,7 @@ const Hangman = () => {
           <div>
             <h2 className="text-lg font-semibold mb-2">Wrong</h2>
             <div className="flex flex-wrap gap-2">
-              {[...wrongLetters].map((letter) => (
+              {Array.from(wrongLetters).map((letter) => (
                 <span key={letter} className="px-2 py-1 bg-red-400 font-bold text-black rounded">{letter}</span>
               ))}
             </div>
@@ -168,7 +170,7 @@ const Hangman = () => {
         </Button>
       </div>
       {/* Draggable Dictionary */}
-      {showDictionary && (
+      {showDictionary && dictionaryData && (
         <DraggableDictionary
           dictionaryData={dictionaryData}
           onClose={() => setShowDictionary(false)}

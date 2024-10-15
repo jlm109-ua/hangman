@@ -3,8 +3,18 @@ import Draggable from 'react-draggable'
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 
+interface DictionaryEntry {
+    word: string;
+    meanings: {
+        partOfSpeech: string;
+        definitions: {
+            definition: string;
+        }[];
+    }[];
+}
+
 interface DraggableDictionaryProps {
-    dictionaryData: any
+    dictionaryData: DictionaryEntry[]
     onClose: () => void
 }
 
@@ -21,11 +31,11 @@ const DraggableDictionary: React.FC<DraggableDictionaryProps> = ({ dictionaryDat
                 <div className="p-4 max-h-96 overflow-y-auto">
                     {dictionaryData ? (
                         <div>
-                            {dictionaryData[0].meanings.map((meaning: any, index: number) => (
+                            {dictionaryData[0].meanings.map((meaning, index) => (
                                 <div key={index} className="mb-4">
                                     <h4 className="text-lg font-bold">{meaning.partOfSpeech}</h4>
                                     <ul className="list-disc list-inside">
-                                        {meaning.definitions.slice(0, 3).map((def: any, defIndex: number) => (
+                                        {meaning.definitions.slice(0, 3).map((def, defIndex) => (
                                             <li key={defIndex} className="mb-2">{def.definition}</li>
                                         ))}
                                     </ul>
