@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hangman Game with Dictionary
 
-## Getting Started
+This project is a modern implementation of the classic Hangman game, built with React and Next.js. It features a sleek user interface, real-time feedback, and an integrated dictionary feature that provides definitions for the words used in the game.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Classic Hangman gameplay
+- Responsive design using Tailwind CSS
+- Real-time feedback on guessed letters
+- Visual representation of remaining lives
+- Integrated dictionary feature
+- Draggable dictionary component for better user experience
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How to Play
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. The game starts with a hidden word represented by underscores.
+2. Guess a letter by typing it into the input field and clicking "Check" or pressing Enter.
+3. If the letter is in the word, it will be revealed in its correct position(s).
+4. If the letter is not in the word, you lose a life (represented by hearts).
+5. Keep guessing letters until you either guess the entire word or run out of lives.
+6. You can start a new game at any time by clicking the "Restart game" button.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Dictionary Feature
 
-## Learn More
+- When a game ends (win or lose), a draggable dictionary component will appear with the definition of the word.
+- The dictionary will remain visible until you choose to close it by clicking the X button.
+- You can drag the dictionary around the screen for better visibility.
+- Starting a new game will not affect the dictionary's visibility.
 
-To learn more about Next.js, take a look at the following resources:
+## Technologies Used
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- React
+- Next.js
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- react-draggable
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Used
 
-## Deploy on Vercel
+This project uses the [Free Dictionary API](https://dictionaryapi.dev/) to fetch word definitions.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
