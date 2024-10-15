@@ -1,101 +1,181 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import React, { useState, useCallback, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Heart } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { generate } from 'random-words'
+import DraggableDictionary from '@/components/DraggableDictionary'
+
+const Hangman = () => {
+  // State variables
+  const [word, setWord] = useState('')
+  const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set())
+  const [wrongLetters, setWrongLetters] = useState<Set<string>>(new Set())
+  const [lives, setLives] = useState(5)
+  const [inputLetter, setInputLetter] = useState('')
+  const [gameOver, setGameOver] = useState(false)
+  const [message, setMessage] = useState('')
+  const [animatingHeart, setAnimatingHeart] = useState(-1)
+  const [dictionaryData, setDictionaryData] = useState<any>(null)
+  const { toast } = useToast()
+  const [showDictionary, setShowDictionary] = useState(false)
+
+  // Function to get a random word
+  const getRandomWord = useCallback(() => {
+    try {
+      const newWord = generate({ exactly: 1, minLength: 5 })[0]
+      return newWord.toLowerCase()
+    } catch (error) {
+      console.error('Error getting random word:', error)
+      return 'default' // default word in case of error
+    }
+  }, [])
+
+  // Function to fetch dictionary data
+  const fetchDictionaryData = useCallback(async (word: string) => {
+    try {
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+      const data = await response.json()
+      setDictionaryData(data)
+      setShowDictionary(true)
+    } catch (error) {
+      console.error('Error fetching dictionary data:', error)
+      setDictionaryData(null)
+    }
+  }, [])
+
+  // Function to start or restart the game
+  const startGame = useCallback(() => {
+    const newWord = getRandomWord()
+    setWord(newWord)
+    setGuessedLetters(new Set())
+    setWrongLetters(new Set())
+    setLives(5)
+    setGameOver(false)
+    setMessage('')
+    // We don't reset the dictionary data or visibility here
+  }, [getRandomWord])
+
+  // Function to check the guessed letter
+  const checkLetter = useCallback((letter: string) => {
+    if (gameOver) return
+    setInputLetter('')
+    if (guessedLetters.has(letter) || wrongLetters.has(letter)) {
+      toast({
+        title: "Letter already used",
+        description: "You've already tried this letter.",
+      })
+      return
+    }
+    if (word.includes(letter)) {
+      const newGuessedLetters = new Set(guessedLetters)
+      newGuessedLetters.add(letter)
+      setGuessedLetters(newGuessedLetters)
+      // Check if all letters have been guessed
+      if ([...word].every(l => newGuessedLetters.has(l))) {
+        setGameOver(true)
+        setMessage('You won!')
+        fetchDictionaryData(word)
+      }
+    } else {
+      const newWrongLetters = new Set(wrongLetters)
+      newWrongLetters.add(letter)
+      setWrongLetters(newWrongLetters)
+      const newLives = lives - 1
+      setLives(newLives)
+      setAnimatingHeart(newLives)
+      // Check if the player has lost
+      if (newLives === 0) {
+        setGameOver(true)
+        setMessage(`You lost! The word was: ${word}`)
+        fetchDictionaryData(word)
+      }
+    }
+  }, [gameOver, guessedLetters, wrongLetters, word, lives, toast, fetchDictionaryData])
+
+  // Start the game when the component mounts
+  useEffect(() => {
+    startGame()
+  }, [startGame])
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-4">
+      <div className="w-full max-w-2xl flex flex-col items-center justify-center">
+        <h1 className="text-4xl font-bold mb-8">h_ngman</h1>
+        {/* Hearts representing lives */}
+        <div className="flex mb-8">
+          {[...Array(5)].map((_, index) => (
+            <Heart
+              key={index}
+              className={`w-8 h-8 ${index < lives ? 'text-destructive' : 'text-muted'} ${animatingHeart === index ? 'animate-heartbeat' : ''}`}
+              fill={index < lives ? 'currentColor' : 'gray'}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {/* Word display */}
+        <div className="text-4xl mb-8">
+          {word.split('').map((letter, index) => (
+            <span key={index} className="mr-2">
+              {guessedLetters.has(letter) ? letter : '_'}
+            </span>
+          ))}
+        </div>
+        {/* Input form or game over message */}
+        {!gameOver ? (
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            checkLetter(inputLetter.toLowerCase())
+          }} className="flex gap-2 mb-4">
+            <Input
+              type="text"
+              maxLength={1}
+              value={inputLetter}
+              onChange={(e) => setInputLetter(e.target.value)}
+              className="w-16 text-center text-2xl"
+              aria-label="Enter a letter"
+            />
+            <Button type="submit">Check</Button>
+          </form>
+        ) : (
+          <div className={`text-2xl font-bold mb-4 ${message.includes('lost') ? 'text-destructive' : 'text-primary'}`}>
+            {message}
+          </div>
+        )}
+        {/* Guessed and wrong letters display */}
+        <div className="flex gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Correct</h2>
+            <div className="flex flex-wrap gap-2">
+              {[...guessedLetters].map((letter) => (
+                <span key={letter} className="px-2 py-1 bg-green-300 font-bold rounded">{letter}</span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Wrong</h2>
+            <div className="flex flex-wrap gap-2">
+              {[...wrongLetters].map((letter) => (
+                <span key={letter} className="px-2 py-1 bg-red-400 font-bold text-black rounded">{letter}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Start/Restart game button */}
+        <Button onClick={startGame} className="mt-4">
+          {gameOver ? 'Play again' : 'Restart game'}
+        </Button>
+      </div>
+      {/* Draggable Dictionary */}
+      {showDictionary && (
+        <DraggableDictionary
+          dictionaryData={dictionaryData}
+          onClose={() => setShowDictionary(false)}
+        />
+      )}
     </div>
-  );
+  )
 }
+
+export default Hangman
