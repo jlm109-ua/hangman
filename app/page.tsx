@@ -66,7 +66,7 @@ const Hangman = () => {
   }, [])
 
   const addWordToSupabase = useCallback(async (word: string) => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('hangman_words')
       .upsert({ word: word.toLowerCase() }, { onConflict: 'word' })
 
@@ -125,7 +125,7 @@ const Hangman = () => {
       gameStartedRef.current = true
       startGame()
     }
-  }, [])
+  }, [startGame])
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-4">

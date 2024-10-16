@@ -57,15 +57,19 @@ export default function WordPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <Link href="/" className="mb-4 inline-block">
-                <Button isBackButton>Go Back</Button>
-            </Link>
-            <Link href="/" className="mb-4 inline-block ml-2">
-                <Button variant="outline">
-                    <Gamepad2 className="mr-2 h-4 w-4" />
-                    Play h_ngm_n
-                </Button>
-            </Link>
+            <div
+                className='flex flex-col'
+            >
+                <Link href="/" className="mb-4 inline-block">
+                    <Button isBackButton>Go Back</Button>
+                </Link>
+                <Link href="/" className="mb-4 inline-block">
+                    <Button variant="outline">
+                        <Gamepad2 className="mr-2 h-4 w-4" />
+                        Play h_ngm_n
+                    </Button>
+                </Link>
+            </div>
             <h1 className="text-4xl font-bold mb-4">{wordData.word}</h1>
             <p className="text-xl mb-4">{wordData.phonetic}</p>
 

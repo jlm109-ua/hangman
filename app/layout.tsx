@@ -14,9 +14,15 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "hangman",
+  title: "h_ngm_n",
   description: "Hangman game",
-};
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+  },
+}
 
 export default function RootLayout({
   children,

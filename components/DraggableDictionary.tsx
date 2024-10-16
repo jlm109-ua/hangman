@@ -2,6 +2,7 @@ import React from 'react'
 import Draggable from 'react-draggable'
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
+import Link from "next/link"
 
 interface DictionaryEntry {
     word: string;
@@ -23,7 +24,12 @@ const DraggableDictionary: React.FC<DraggableDictionaryProps> = ({ dictionaryDat
         <Draggable handle=".handle">
             <div className="absolute top-4 right-4 w-80 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
                 <div className="handle bg-muted p-2 cursor-move flex justify-between items-center">
-                    <h2 className="text-lg font-bold">{dictionaryData[0].word}</h2>
+                    <Link
+                        href={`/dictionary/${dictionaryData[0].word}`}
+                        className="text-blue-500 hover:underline"
+                    >
+                        <h2 className="text-lg font-bold">{dictionaryData[0].word}</h2>
+                    </Link>
                     <Button variant="ghost" size="icon" onClick={onClose}>
                         <X className="h-4 w-4" />
                     </Button>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="250">
+  <!-- Base del ahorcado -->
+  <line x1="10" y1="200" x2="70" y2="200" stroke="black" stroke-width="4"/>
+
+  <!-- Poste vertical -->
+  <line x1="40" y1="200" x2="40" y2="20" stroke="black" stroke-width="4"/>
+
+  <!-- Poste horizontal -->
+  <line x1="40" y1="20" x2="120" y2="20" stroke="black" stroke-width="4"/>
+
+  <!-- Cuerda -->
+  <line x1="120" y1="20" x2="120" y2="50" stroke="black" stroke-width="4"/>
+</svg>
