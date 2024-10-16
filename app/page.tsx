@@ -1,11 +1,19 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { generate } from 'random-words'
 import DraggableDictionary from '@/components/DraggableDictionary'
 import { HangmanSVG } from '@/components/HangmanSVG'
+import { createClient } from '@supabase/supabase-js'
+import { Book } from "lucide-react"
+import Link from 'next/link'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 interface DictionaryEntry {
   word: string;
@@ -29,6 +37,7 @@ const Hangman = () => {
   const [message, setMessage] = useState('')
   const [dictionaryData, setDictionaryData] = useState<DictionaryEntry[] | null>(null)
   const [showDictionary, setShowDictionary] = useState(false)
+  const gameStartedRef = useRef(false)
 
   const getRandomWord = useCallback(() => {
     try {
@@ -56,6 +65,49 @@ const Hangman = () => {
     }
   }, [])
 
+  const addWordToSupabase = useCallback(async (word: string) => {
+    const { data, error } = await supabase
+      .from('hangman_words')
+      .upsert({ word: word.toLowerCase() }, { onConflict: 'word' })
+
+    if (error) {
+      console.error('Error adding word to Supabase:', error)
+    } else {
+      console.log('Word added to Supabase:', word)
+    }
+  }, [])
+
+  const endGame = useCallback((won: boolean) => {
+    setGameOver(true)
+    setMessage(won ? 'You won!' : `You lost! The word was: ${word}`)
+    fetchDictionaryData(word)
+    addWordToSupabase(word)
+  }, [word, fetchDictionaryData, addWordToSupabase])
+
+  const checkLetter = useCallback((letter: string) => {
+    if (gameOver) return
+    setInputLetter('')
+    if (guessedLetters.has(letter) || wrongLetters.has(letter)) return
+    if (word.includes(letter)) {
+      const newGuessedLetters = new Set(guessedLetters)
+      newGuessedLetters.add(letter)
+      setGuessedLetters(newGuessedLetters)
+      const allLettersGuessed = word.split('').every(l => newGuessedLetters.has(l))
+      if (allLettersGuessed) {
+        endGame(true)
+      }
+    } else {
+      const newWrongLetters = new Set(wrongLetters)
+      newWrongLetters.add(letter)
+      setWrongLetters(newWrongLetters)
+      const newLives = lives - 1
+      setLives(newLives)
+      if (newLives === 0) {
+        endGame(false)
+      }
+    }
+  }, [gameOver, guessedLetters, wrongLetters, word, lives, endGame])
+
   const startGame = useCallback(() => {
     const newWord = getRandomWord()
     console.log('New word:', newWord) // For debugging
@@ -68,38 +120,12 @@ const Hangman = () => {
     setShowDictionary(false)
   }, [getRandomWord])
 
-  const checkLetter = useCallback((letter: string) => {
-    if (gameOver) return
-    setInputLetter('')
-    if (guessedLetters.has(letter) || wrongLetters.has(letter)) return
-    if (word.includes(letter)) {
-      const newGuessedLetters = new Set(guessedLetters)
-      newGuessedLetters.add(letter)
-      setGuessedLetters(newGuessedLetters)
-      const allLettersGuessed = word.split('').every(l => newGuessedLetters.has(l))
-      if (allLettersGuessed) {
-        setGameOver(true)
-        setMessage('You won!')
-        fetchDictionaryData(word)
-      }
-    } else {
-      const newWrongLetters = new Set(wrongLetters)
-      newWrongLetters.add(letter)
-      setWrongLetters(newWrongLetters)
-      const newLives = lives - 1
-      setLives(newLives)
-      console.log(lives) // For debugging
-      if (newLives === 0) {
-        setGameOver(true)
-        setMessage(`You lost! The word was: ${word}`)
-        fetchDictionaryData(word)
-      }
-    }
-  }, [gameOver, guessedLetters, wrongLetters, word, lives, fetchDictionaryData])
-
   useEffect(() => {
-    startGame()
-  }, [startGame])
+    if (!gameStartedRef.current) {
+      gameStartedRef.current = true
+      startGame()
+    }
+  }, [])
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-4">
@@ -133,7 +159,7 @@ const Hangman = () => {
             {message}
           </div>
         )}
-        <div className="flex gap-4 mb-4">
+        <div className="flex flex-col gap-4 mb-4">
           <div>
             <h2 className="text-lg font-semibold mb-2">Correct</h2>
             <div className="flex flex-wrap gap-2">
@@ -154,6 +180,12 @@ const Hangman = () => {
         <Button onClick={startGame} className="mt-4">
           {gameOver ? 'Play again' : 'Restart game'}
         </Button>
+        <Link href="/dictionary" className="mt-4">
+          <Button>
+            <Book className="mr-2 h-4 w-4" />
+            Go to Dictionary
+          </Button>
+        </Link>
       </div>
       {showDictionary && dictionaryData && (
         <DraggableDictionary
