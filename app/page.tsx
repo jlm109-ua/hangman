@@ -88,7 +88,7 @@ const Hangman = () => {
   }, [word, fetchDictionaryData, addWordToSupabase])
 
   const checkLetter = useCallback((letter: string) => {
-    if (gameOver) return
+    if (gameOver || !letter) return
     setInputLetter('')
     if (guessedLetters.has(letter) || wrongLetters.has(letter)) return
     if (word.includes(letter)) {
@@ -130,6 +130,20 @@ const Hangman = () => {
     }
   }, [startGame])
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value.length === 0 || /^[a-zA-Z]$/.test(value)) {
+      setInputLetter(value.toLowerCase())
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (inputLetter) {
+      checkLetter(inputLetter.toLowerCase())
+    }
+  }
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-var(--header-height))] bg-background text-foreground p-4">
       <div className="w-full max-w-2xl flex flex-col items-center justify-center">
@@ -142,22 +156,19 @@ const Hangman = () => {
           ))}
         </div>
         {!gameOver ? (
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            checkLetter(inputLetter.toLowerCase())
-          }} className="flex gap-2 mb-4">
+          <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
             <Input
               type="text"
               maxLength={1}
               value={inputLetter}
-              onChange={(e) => setInputLetter(e.target.value)}
+              onChange={handleInputChange}
               className="w-16 text-center text-2xl"
               aria-label="Enter a letter"
             />
-            <Button type="submit">Check</Button>
+            <Button type="submit" disabled={!inputLetter}>Check</Button>
           </form>
         ) : (
-          <div className={`text-2xl font-bold mb-4 ${message.includes('lost') ? 'text-destructive' : 'text-primary'}`}>
+          <div className={`text-2xl font-bold mb-4 ${message.includes('lost') ? 'text-destructive dark:text-red-600' : 'text-primary dark:text-green-600'}`}>
             {message}
           </div>
         )}
@@ -166,7 +177,7 @@ const Hangman = () => {
             <h2 className="text-lg text-center font-semibold mb-2">Correct</h2>
             <div className="flex flex-wrap gap-2">
               {Array.from(guessedLetters).map((letter) => (
-                <span key={letter} className="px-2 py-1 bg-green-300 text-black font-bold rounded">{letter}</span>
+                <span key={letter} className="px-2 py-1 bg-green-300 dark:bg-green-600 dark:text-white text-black font-bold rounded">{letter}</span>
               ))}
             </div>
           </div>
@@ -174,7 +185,7 @@ const Hangman = () => {
             <h2 className="text-lg text-center font-semibold mb-2">Wrong</h2>
             <div className="flex flex-wrap gap-2">
               {Array.from(wrongLetters).map((letter) => (
-                <span key={letter} className="px-2 py-1 bg-red-400 font-bold text-black rounded">{letter}</span>
+                <span key={letter} className="px-2 py-1 bg-red-400  dark:bg-red-600 dark:text-white font-bold text-black rounded">{letter}</span>
               ))}
             </div>
           </div>
