@@ -131,7 +131,7 @@ const Hangman = () => {
   }, [startGame])
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-4">
+    <div className="flex items-center justify-center min-h-[calc(100vh-var(--header-height))] bg-background text-foreground p-4">
       <div className="w-full max-w-2xl flex flex-col items-center justify-center">
         <HangmanSVG lives={lives} color={svgColor} className="mb-8" />
         <div className="text-4xl mb-8">
