@@ -15,7 +15,8 @@ const HangmanSVG = React.forwardRef<SVGSVGElement, HangmanSVGProps>(
         width="200"
         height="200"
         ref={ref}
-        className={cn(`stroke-${color} fill-none`, className)}
+        className={cn("fill-none", className)}
+        stroke={color}
         {...props}
       >
         {/* Base del ahorcado */}
@@ -52,6 +53,6 @@ const HangmanSVG = React.forwardRef<SVGSVGElement, HangmanSVGProps>(
   }
 );
 
-HangmanSVG.displayName = "Hangman";
+HangmanSVG.displayName = "HangmanSVG";
 
 export { HangmanSVG };

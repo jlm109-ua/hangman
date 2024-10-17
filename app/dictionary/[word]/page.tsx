@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Gamepad2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
 interface WordData {
     word: string;
@@ -57,24 +56,15 @@ export default function WordPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <div
-                className='flex flex-col'
-            >
-                <Link href="/" className="mb-4 inline-block">
-                    <Button isBackButton>Go Back</Button>
-                </Link>
-                <Link href="/" className="mb-4 inline-block">
-                    <Button variant="outline">
-                        <Gamepad2 className="mr-2 h-4 w-4" />
-                        Play h_ngm_n
-                    </Button>
-                </Link>
-            </div>
+            <Link href="/" className="mb-4 inline-block">
+                <Button isBackButton>Go Back</Button>
+            </Link>
             <h1 className="text-4xl font-bold mb-4">{wordData.word}</h1>
             <p className="text-xl mb-4">{wordData.phonetic}</p>
+            <div className="w-full h-px bg-gray-500 my-4"></div>
 
             {wordData.meanings.map((meaning, index) => (
-                <div key={index} className="mb-6">
+                <div key={index} className="mb-6 pb-6 border-b border-gray-500">
                     <h2 className="text-2xl font-semibold mb-2">{meaning.partOfSpeech}</h2>
                     <ol className="list-decimal list-inside">
                         {meaning.definitions.map((def, defIndex) => (
