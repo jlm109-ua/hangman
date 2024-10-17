@@ -3,10 +3,11 @@ import { cn } from "@/lib/utils";
 
 interface HangmanSVGProps extends React.SVGProps<SVGSVGElement> {
   lives: number;
+  color: string;
 }
 
 const HangmanSVG = React.forwardRef<SVGSVGElement, HangmanSVGProps>(
-  ({ className, lives, ...props }, ref) => {
+  ({ className, lives, color, ...props }, ref) => {
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -14,7 +15,7 @@ const HangmanSVG = React.forwardRef<SVGSVGElement, HangmanSVGProps>(
         width="200"
         height="200"
         ref={ref}
-        className={cn("stroke-black fill-none", className)}
+        className={cn(`stroke-${color} fill-none`, className)}
         {...props}
       >
         {/* Base del ahorcado */}
