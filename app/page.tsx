@@ -40,7 +40,6 @@ const Hangman = () => {
   const [showDictionary, setShowDictionary] = useState(false)
   const gameStartedRef = useRef(false)
   const { theme } = useTheme()
-  const svgColor = theme === 'dark' ? 'white' : 'black'
 
   const getRandomWord = useCallback(() => {
     try {
@@ -113,7 +112,7 @@ const Hangman = () => {
 
   const startGame = useCallback(() => {
     const newWord = getRandomWord()
-    console.log('New word:', newWord) // For debugging
+    // console.log('New word:', newWord) // For debugging
     setWord(newWord)
     setGuessedLetters(new Set())
     setWrongLetters(new Set())
@@ -147,7 +146,7 @@ const Hangman = () => {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-var(--header-height))] bg-background text-foreground p-4">
       <div className="w-full max-w-2xl flex flex-col items-center justify-center">
-        <HangmanSVG lives={lives} color={svgColor} className="mb-8" />
+        <HangmanSVG lives={lives} color={theme === 'dark' ? 'white' : 'black'} className="mb-8" />
         <div className="text-4xl mb-8">
           {word.split('').map((letter, index) => (
             <span key={index} className="mr-2">

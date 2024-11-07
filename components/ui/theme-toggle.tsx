@@ -7,10 +7,10 @@ import { Switch } from '@headlessui/react'
 
 export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
-    const [enabled, setEnabled] = React.useState(theme === 'dark')
+    const [enabled, setEnabled] = React.useState(theme === 'light')
 
     React.useEffect(() => {
-        setEnabled(theme === 'dark')
+        setEnabled(theme === 'light')
     }, [theme])
 
     const toggleTheme = () => {
